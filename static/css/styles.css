@@ -1,0 +1,127 @@
+/* Curevia E-Pharmacy Design System */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --brand-green: #064E3B;
+    --brand-green-hover: #065F46;
+    --brand-green-dark: #022c22;
+    --brand-green-light: #ECFDF5;
+    --brand-red: #DC2626;
+    --brand-red-hover: #B91C1C;
+    --brand-red-light: #FEF2F2;
+    --canvas-white: #FFFFFF;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #FFFFFF;
+    color: #111827;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Micro-Interactions */
+.btn-compression {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-compression:active {
+    transform: scale(0.98);
+}
+
+.transition-smooth {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Modal and Backdrop Animations */
+.modal-backdrop-enter {
+    animation: fadeInBackdrop 0.25s ease-out forwards;
+}
+
+.modal-content-enter {
+    animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Drawer Slide-in Animation */
+.drawer-enter {
+    animation: slideInDrawer 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInDrawer {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Custom Toast Notification Animation */
+.toast-slide-in {
+    animation: toastSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px) translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) translateX(0);
+    }
+}
+
+/* Prescription Rx badge pulse animation */
+@keyframes softPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+}
+.pulse-rx {
+    animation: softPulse 2.5s infinite ease-in-out;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #FAFAFA;
+}
+::-webkit-scrollbar-thumb {
+    background: #E5E7EB;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #D1D5DB;
+}
+
+/* Print Invoice Styling */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #invoice-modal-content, #invoice-modal-content * {
+        visibility: visible;
+    }
+    #invoice-modal-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none;
+        border: none;
+    }
+}
+

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Curevia | Buy Genuine Medicines & Healthcare Essentials Online{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Maintenance / Inventory Update Notification (If DB is updating) -->
+    <div id="db-offline-banner" class="hidden p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm font-medium flex items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center space-x-3">
+            <span class="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-cloud-arrow-down text-base"></i>
+            </span>
+            <div>
+                <p class="font-bold text-amber-950">Store Inventory Update in Progress</p>
+                <p class="text-xs text-amber-800/90 mt-0.5">We are currently updating our medicine inventory. Please ensure your local database is running or try refreshing in a moment.</p>
+            </div>
+        </div>
+        <button onclick="window.location.reload()" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs whitespace-nowrap btn-compression transition-all">
+            Refresh Now
+        </button>
+    </div>
+
+    <!-- Hero / Brand Trust Header Banner -->
+    <div class="bg-gradient-to-r from-emerald-900 via-[#064E3B] to-emerald-950 rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg border border-emerald-800">
+        <div class="absolute -right-12 -top-12 w-64 h-64 bg-emerald-700/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10 max-w-3xl space-y-4">
+            <div class="inline-flex items-center space-x-2 bg-emerald-800/80 border border-emerald-600/50 px-3 py-1 rounded-full text-xs font-semibold tracking-wide text-emerald-100">
+                <i class="fa-solid fa-certificate text-emerald-400"></i>
+                <span>Certified Digital Pharmacy &bull; Licensed Dispensing</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
+                Precision Care, <span class="text-emerald-300">Verified Deliveries.</span>
+            </h1>
+            <p class="text-sm sm:text-base text-emerald-100/90 max-w-2xl font-normal leading-relaxed">
+                Order authentic prescription medications, ayurvedic wellness solutions, and diagnostic equipment. Every single package is verified against registered pharmaceutical batches before dispatch.
+            </p>
+
+            <!-- Value Proposition Pillars -->
+            <div class="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="flex items-center space-x-2 text-xs text-emerald-200">
+                    <i class="fa-solid fa-shield-check text-emerald-400 text-sm"></i>
+                    <span>100% Genuine Batches</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs text-emerald-200">
+                    <i class="fa-solid fa-user-doctor text-emerald-400 text-sm"></i>
+                    <span>Pharmacist Rx Audit</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs text-emerald-200">
+                    <i class="fa-solid fa-truck-fast text-emerald-400 text-sm"></i>
+                    <span>Cold-Chain Shipping</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs text-emerald-200">
+                    <i class="fa-solid fa-bolt-lightning text-emerald-400 text-sm"></i>
+                    <span>Fast &amp; Secure Dispatch</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Prescription Audit Bar (Quick status & Upload CTA) -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+            <div class="h-12 w-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-xl flex-shrink-0">
+                <i class="fa-solid fa-prescription"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-gray-900">Have a Doctor's Prescription?</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Upload your prescription slip. Our registered pharmacist will verify it within 15 minutes.</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3 w-full md:w-auto">
+            <div id="rx-quick-stats" class="text-xs text-gray-600 hidden sm:block">
+                <span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-800 font-semibold" id="active-rx-summary">
+                    Prescription service ready
+                </span>
+            </div>
+            <button id="banner-upload-rx-btn" type="button" class="w-full md:w-auto px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all btn-compression flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-file-arrow-up"></i>
+                <span>Upload New Rx</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Search, Filter & Category Navigation -->
+    <div class="space-y-4">
+        
+        <!-- Search and Rx Filter Controls -->
+        <div class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Search medicines, active salts, manufacturers (e.g. Augmentin, Cipla, Paracetamol)..." 
+                    class="w-full text-xs sm:text-sm pl-10 pr-10 py-3 rounded-xl border border-gray-200 focus:border-[#064E3B] focus:ring-2 focus:ring-[#064E3B]/20 outline-none transition-all shadow-xs"
+                >
+                <button id="clear-search-btn" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-circle-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Rx Filter Dropdown -->
+            <div class="flex items-center space-x-2">
+                <select id="rx-filter-select" class="text-xs sm:text-sm py-3 px-3.5 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium focus:border-[#064E3B] focus:ring-2 focus:ring-[#064E3B]/20 outline-none shadow-xs">
+                    <option value="">All Medications</option>
+                    <option value="1">Requires Prescription (Rx Only)</option>
+                    <option value="0">Non-Rx / Over-The-Counter (OTC)</option>
+                </select>
+
+                <button id="refresh-catalog-btn" title="Refresh Catalog" class="p-3 rounded-xl border border-gray-200 text-gray-600 hover:text-[#064E3B] hover:border-[#064E3B] bg-white transition-all shadow-xs btn-compression">
+                    <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Category Horizontal Pill Filter Bar -->
+        <div class="relative">
+            <div id="category-pills" class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none">
+                <button class="category-pill active flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#064E3B] text-white shadow-xs" data-category-id="">
+                    All Categories
+                </button>
+                <div class="text-xs text-gray-400 py-2">Loading categories...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Catalog Section Header -->
+    <div class="flex items-center justify-between pt-2">
+        <div>
+            <h2 class="text-xl font-extrabold text-gray-900 tracking-tight" id="catalog-heading">Pharmaceutical Catalog</h2>
+            <p class="text-xs text-gray-500 mt-0.5" id="catalog-count-label">Displaying genuine, batch-verified healthcare essentials</p>
+        </div>
+        <div class="flex items-center space-x-2 text-xs text-gray-500">
+            <span class="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
+            <span>Real-time Availability</span>
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Rendered dynamically by store.js -->
+        <div class="col-span-full py-16 text-center text-gray-400">
+            <i class="fa-solid fa-spinner fa-spin text-3xl text-emerald-700 mb-3"></i>
+            <p class="text-sm font-semibold text-gray-700">Loading catalog items...</p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/store.js"></script>
+{% endblock %}

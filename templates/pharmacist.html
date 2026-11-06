@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Curevia | Pharmacist Verification Portal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Pharmacist Portal Header -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+            <div class="h-14 w-14 rounded-2xl bg-emerald-100 text-[#064E3B] flex items-center justify-center text-2xl flex-shrink-0 shadow-xs">
+                <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-xl font-extrabold text-gray-900">Registered Pharmacist Verification Portal</h1>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-[#064E3B]">
+                        Licensed Healthcare Personnel
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    Logged in as <strong>{{ current_user.full_name if current_user else 'Dr. Sneha Patel' }}</strong> &bull; Drugs &amp; Cosmetics Regulatory Verification
+                </p>
+            </div>
+        </div>
+
+        <!-- Summary Metrics -->
+        <div class="flex items-center space-x-3">
+            <div class="px-4 py-2 bg-red-50 border border-red-200 rounded-xl text-center">
+                <span class="block text-lg font-black text-red-600" id="pharma-pending-count">0</span>
+                <span class="text-[10px] font-bold text-red-800 uppercase tracking-wide">Pending Rx</span>
+            </div>
+            <div class="px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                <span class="block text-lg font-black text-amber-700" id="pharma-expiring-count">0</span>
+                <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wide">Expiring Soon</span>
+            </div>
+            <div class="px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+                <span class="block text-lg font-black text-[#064E3B]" id="pharma-total-batches">0</span>
+                <span class="text-[10px] font-bold text-emerald-800 uppercase tracking-wide">Batches Monitored</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation Controls -->
+    <div class="border-b border-gray-200">
+        <nav class="flex space-x-8" aria-label="Tabs">
+            <button id="tab-rx-btn" type="button" class="tab-nav-btn active border-b-2 border-[#064E3B] py-3 px-1 text-sm font-bold text-[#064E3B] flex items-center space-x-2">
+                <i class="fa-solid fa-clipboard-check text-base"></i>
+                <span>Prescription Verification Queue</span>
+                <span id="tab-rx-badge" class="ml-1 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+            </button>
+            <button id="tab-batch-btn" type="button" class="tab-nav-btn border-b-2 border-transparent py-3 px-1 text-sm font-bold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                <i class="fa-solid fa-boxes-packing text-base"></i>
+                <span>Register Incoming Batch</span>
+            </button>
+            <button id="tab-alerts-btn" type="button" class="tab-nav-btn border-b-2 border-transparent py-3 px-1 text-sm font-bold text-gray-500 hover:text-gray-700 hover:border-gray-300 flex items-center space-x-2">
+                <i class="fa-solid fa-triangle-exclamation text-base"></i>
+                <span>Batch Vigilance &amp; Expiry Alerts</span>
+                <span id="tab-alerts-badge" class="ml-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- TAB 1: Prescription Verification Queue -->
+    <div id="tab-rx-content" class="tab-panel space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <h2 class="text-base font-extrabold text-gray-900">Submitted Doctor Prescriptions</h2>
+                <p class="text-xs text-gray-500">Inspect doctor credentials and digital slip before granting dispensing authorization.</p>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <label for="rx-filter-status" class="text-xs font-bold text-gray-600">Filter Status:</label>
+                <select id="rx-filter-status" class="text-xs py-2 px-3 rounded-lg border border-gray-200 bg-white font-medium focus:border-[#064E3B] focus:ring-1 focus:ring-[#064E3B] shadow-xs">
+                    <option value="Pending" selected>Pending Review</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="">All Prescriptions</option>
+                </select>
+                <button id="refresh-rx-btn" class="p-2 rounded-lg border border-gray-200 text-gray-600 hover:text-[#064E3B] bg-white shadow-xs btn-compression">
+                    <i class="fa-solid fa-arrows-rotate text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="prescriptions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="col-span-full py-12 text-center text-gray-400">
+                <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-700 mb-2"></i>
+                <p class="text-xs font-semibold">Loading submitted prescriptions...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: Batch Inventory Management -->
+    <div id="tab-batch-content" class="tab-panel hidden space-y-6">
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-200 p-8 shadow-xs space-y-6">
+            <div class="border-b border-gray-100 pb-4">
+                <h2 class="text-lg font-extrabold text-gray-900 flex items-center space-x-2">
+                    <i class="fa-solid fa-dolly text-[#064E3B]"></i>
+                    <span>Register New Pharmaceutical Batch</span>
+                </h2>
+                <p class="text-xs text-gray-500 mt-1">
+                    Record certified manufacturing lots with strict expiry and quantity tracking.
+                </p>
+            </div>
+
+            <form id="add-batch-form" class="space-y-5">
+                <div>
+                    <label for="batch-product-select" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                        Pharmaceutical Drug <span class="text-red-600">*</span>
+                    </label>
+                    <select id="batch-product-select" required class="w-full text-xs py-2.5 px-3 rounded-xl border border-gray-300 focus:border-[#064E3B] focus:ring-1 focus:ring-[#064E3B] bg-white font-medium">
+                        <option value="">-- Choose Product from Catalog --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="batch-number-input" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                        Batch / Lot Identification Number <span class="text-red-600">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-barcode text-xs"></i>
+                        </span>
+                        <input type="text" id="batch-number-input" required placeholder="e.g. AUG-2026-N99" class="w-full text-xs pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 focus:border-[#064E3B] focus:ring-1 focus:ring-[#064E3B] font-mono uppercase">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="batch-mfg-input" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Manufacturing Date <span class="text-red-600">*</span>
+                        </label>
+                        <input type="date" id="batch-mfg-input" required class="w-full text-xs py-2.5 px-3 rounded-xl border border-gray-300 focus:border-[#064E3B] focus:ring-1 focus:ring-[#064E3B]">
+                    </div>
+
+                    <div>
+                        <label for="batch-exp-input" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Expiry Date <span class="text-red-600">*</span>
+                        </label>
+                        <input type="date" id="batch-exp-input" required class="w-full text-xs py-2.5 px-3 rounded-xl border border-gray-300 focus:border-[#064E3B] focus:ring-1 focus:ring-[#064E3B]">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="batch-qty-input" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                        Received Stock Quantity (Units) <span class="text-red-600">*</span>
+                    </label>
+                    <input type="number" id="batch-qty-input" min="1" step="1" required placeholder="e.g. 100" class="w-full text-xs py-2.5 px-3 rounded-xl border border-gray-300 focus:border-[#064E3B] focus:ring-1 focus:ring-[#064E3B] font-semibold">
+                </div>
+
+                <div class="pt-4 border-t border-gray-100 flex items-center justify-end space-x-3">
+                    <button type="reset" class="px-4 py-2.5 text-xs font-bold text-gray-600 hover:text-gray-900 rounded-xl hover:bg-gray-100 transition-all">
+                        Reset Form
+                    </button>
+                    <button type="submit" id="btn-submit-batch" class="px-6 py-2.5 bg-[#064E3B] hover:bg-[#065F46] text-white text-xs font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-compression flex items-center space-x-2">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>Register Batch in Inventory</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB 3: Inventory Alerts Table -->
+    <div id="tab-alerts-content" class="tab-panel hidden space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+                <h2 class="text-base font-extrabold text-gray-900 flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved text-amber-600"></i>
+                    <span>Real-Time Batch Expiry &amp; Stock Vigilance</span>
+                </h2>
+                <p class="text-xs text-gray-500">Live safety monitoring for all registered pharmaceutical batches</p>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button class="alert-pill-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-[#064E3B] text-white" data-status="">
+                    All Batches
+                </button>
+                <button class="alert-pill-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-red-700 border border-red-200 hover:bg-red-50" data-status="EXPIRED">
+                    Expired
+                </button>
+                <button class="alert-pill-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-amber-700 border border-amber-200 hover:bg-amber-50" data-status="EXPIRING SOON">
+                    Expiring Soon
+                </button>
+                <button class="alert-pill-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50" data-status="LOW STOCK">
+                    Low Stock
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-gray-50/80 border-b border-gray-200 text-gray-600 font-bold uppercase tracking-wider text-[11px]">
+                            <th class="py-3 px-4">Batch ID &amp; Lot</th>
+                            <th class="py-3 px-4">Medication Name</th>
+                            <th class="py-3 px-4">Manufacturer</th>
+                            <th class="py-3 px-4">Mfg / Expiry Date</th>
+                            <th class="py-3 px-4">Shelf-Life Status</th>
+                            <th class="py-3 px-4">Stock Units</th>
+                            <th class="py-3 px-4 text-center">Audit Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-alerts-tbody" class="divide-y divide-gray-100 font-medium">
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-gray-400">Loading batch monitoring data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/pharmacist.js"></script>
+{% endblock %}
